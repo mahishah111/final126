@@ -1,0 +1,110 @@
+#Tuple Out game
+import random
+
+class TupleOutGame:
+    """
+    A class that holds the contents to the Tuple Out game.
+    """
+
+    def __init__(self, target_score=50):
+        """
+        Starts the game with target score and player scores.
+        target_score: Score required to win the game.
+        """
+        self.players = {}
+        self.target_score = target_score
+
+    def add_players(self):
+        """
+        Allows players to input the number of players and their names.
+        """
+        print("Welcome to the Tuple Out Dice Game!")
+        player_count = int(input("Enter the number of players: "))
+        for i in range(player_count):
+            name = input(f"Enter the name for Player {i + 1}: ")
+            self.players[name] = 0
+        print("\nPlayers:", ", ".join(self.players.keys()))
+
+    def roll_dice(self):
+        """
+        Simulates rolling three six-sided dice.
+        returns the List of three dice values.
+        """
+        return [random.randint(1, 6) for _ in range(3)]
+
+    def check_fixed_dice(self, dice):
+        """
+        Identifies the fixed dice (two matching numbers after rolled).
+        dice: List of dice values.
+        return: List of fixed dice values.
+        """
+        counts = {num: dice.count(num) for num in set(dice)}
+        fixed = [num for num, count in counts.items() if count == 2]
+        return fixed
+
+    def play_turn(self, player_name):
+        """
+        Handles a single player's turn.
+        return: The score earned in the turn.
+        """
+        dice = self.roll_dice()
+        print(f"\n{player_name}'s turn! Initial roll: {dice}")
+
+        while True:
+            fixed = self.check_fixed_dice(dice)
+            if len(set(dice)) == 1:  # Tuple out condition
+                print("You tupled out! Score: 0")
+                return 0
+
+            print(f"Fixed dice: {fixed}")
+            choice = input("Do you want to re-roll unfixed dice? (y/n): ").lower()
+            if choice == 'y':
+                dice = [random.randint(1, 6) if num not in fixed else num for num in dice]
+                print(f"New roll: {dice}")
+            else:
+                score = sum(dice)
+                print(f"You stopped! Turn score: {score}")
+                return score
+
+    def display_scores(self):
+        """
+        Displays the current scores of all players.
+        """
+        print("\nCurrent Scores:")
+        for player, score in self.players.items():
+            print(f"{player}: {score} points")
+
+    def check_winner(self):
+        """
+        Checks if any player has reached the target score.
+        return: The name of the winning player, if any.
+        """
+        for player, score in self.players.items():
+            if score >= self.target_score:
+                return player
+        return None
+
+    def start_game(self):
+        """
+        Starts and controls the flow of the game.
+        """
+        self.add_players()
+        winner = None
+        round_number = 1
+
+        while not winner:
+            print(f"\n--- Round {round_number} ---")
+            for player in self.players.keys():
+                turn_score = self.play_turn(player)
+                self.players[player] += turn_score
+                self.display_scores()
+                winner = self.check_winner()
+                if winner:
+                    break
+            round_number += 1
+
+        print(f"\n Congratulations, {winner}! You won the game with {self.players[winner]} points!")
+
+if __name__ == "__main__":
+    game = TupleOutGame(target_score=50)
+    game.start_game()
